@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scorecard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/marx/3.0.5/marx.min.css">
+    <style>
+        body {
+            font-family: "BBC Reith Sans", system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            padding: 1em;
+        }
+        main {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-flow: column wrap;
+            align-content: stretch;
+            max-height: 720px;
+            max-width: 100%;
+        }
+        .status-green {
+            background-color: #2ECC40;
+        }
+        .status-amber {
+            background-color: #FF851B;
+        }
+        .status-red {
+            background-color: #FF4136;
+        }
+        section {
+            width: 50%;
+        }
+        table {
+            width: 95%;
+        }
+        table td:last-child {
+            text-align: center;
+            font-weight: bold;
+            font-size: 150%;
+            width: 20%;
+        }
+    </style>
+</head>
+<body>
+
+<h1 class="ui title">Scorecard</h1>
+
+<main>
+    {% for category, kpis in scorecard.items() %}
+    <section>
+    <h2>{{ category }}</h2>
+    <table>
+        <tbody>
+            {% for kpi in kpis %}
+                <tr>
+                    <td>
+                        {% if kpi.url %}
+                        <a href="{{kpi.url}}">{{ kpi.name }}</a>
+                        {% else %}
+                        {{ kpi.name }}
+                        {% endif %}
+                    </td>
+                    <td class="status-{{ kpi.status }}">
+                        {{ kpi.value }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </section>
+    {% endfor %}
+</main>
+
+</body>
+</html>
