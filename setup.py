@@ -20,7 +20,10 @@ setup(
     packages=['pokr'],
     description='Framework for building product and personal 2scorecards.',
     url='https://github.com/avengerpenguin/pokr',
-    install_requires=['quart', 'invoke', 'beautifulsoup4'],
+    install_requires=[
+        'quart', 'invoke', 'beautifulsoup4', 'PyGithub', 'todoist-python', 'sh', 'cachetools', 'livereload',
+        'google-api-python-client', 'google-auth-httplib2', 'google-auth-oauthlib',
+    ],
     tests_require=[],
     setup_requires=[],
 )

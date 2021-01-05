@@ -11,13 +11,16 @@
             font-family: 'Noto Sans', sans-serif;
             padding: 1em;
         }
+        h1 {
+            display: none;
+        }
         main {
             display: flex;
             align-items: center;
             justify-content: center;
             flex-flow: column wrap;
             align-content: stretch;
-            max-height: 720px;
+            max-height: 960px;
             max-width: 100%;
         }
         .status-green {
@@ -34,18 +37,22 @@
         }
         table {
             width: 95%;
+            font-size: 120%;
+        }
+        small {
+            float: right;
         }
         table td:last-child {
             text-align: center;
             font-weight: bold;
-            font-size: 150%;
+            font-size: 130%;
             width: 20%;
         }
     </style>
 </head>
 <body>
 
-<h1 class="ui title">Scorecard</h1>
+<h1>Scorecard</h1>
 
 <main>
     {% for category, kpis in scorecard.items() %}
@@ -61,6 +68,7 @@
                         {% else %}
                         {{ kpi.name }}
                         {% endif %}
+                        <small>({{kpi.amber}}, {{kpi.green}})</small>
                     </td>
                     <td class="status-{{ kpi.status }}">
                         {{ kpi.value }}
