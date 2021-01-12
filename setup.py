@@ -22,7 +22,7 @@ setup(
     url='https://github.com/avengerpenguin/pokr',
     install_requires=[
         'quart', 'invoke', 'beautifulsoup4', 'PyGithub', 'todoist-python', 'sh', 'cachetools', 'livereload',
-        'google-api-python-client', 'google-auth-httplib2', 'google-auth-oauthlib',
+        'google-api-python-client', 'google-auth-httplib2', 'google-auth-oauthlib', 'feedparser', 'pybraries',
     ],
     tests_require=[],
     setup_requires=[],

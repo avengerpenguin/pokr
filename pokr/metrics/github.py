@@ -41,3 +41,23 @@ def activity(org=None, owner=None, cutoff=timedelta(days=7)):
         return len(filtered)
 
     return Metric(f)
+
+
+def failures():
+
+    async def f():
+        named_user = github.get_user(get_user_login())
+
+        failures = 0
+
+        for repo in named_user.get_repos():
+            trunk = repo.get_branch(repo.default_branch)
+            for run in trunk.commit.get_check_runs():
+                print(repo.name, run.name, run.conclusion)
+                if run.conclusion != 'success':
+                    failures += 1
+                    break
+
+        return failures
+
+    return Metric(f)

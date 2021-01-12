@@ -1,10 +1,12 @@
 import asyncio
 import os
 from collections import defaultdict
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, tzinfo
 from typing import Callable, Union, Text, Dict, Tuple, Awaitable
 
 import aiohttp
+import pytz
+import requests
 from bs4 import BeautifulSoup
 from github import Github
 import cachetools
@@ -123,45 +125,41 @@ def notes(repo_name):
     return Metric(f)
 
 
-def todoist(project_name=None, priority=None, checked=0, title=None):
-    from todoist.api import TodoistAPI
-    api = TodoistAPI(os.getenv('TODOIST_TOKEN'))
-
-    def due(date_obj):
-        if not date_obj:
-            return True
-        today = datetime.today()
-        due_date = datetime.strptime(date_obj["date"], "%Y-%m-%d")
-        return today > due_date
+def libraries(user_id):
+    url = f'https://libraries.io/api/github/{user_id}/projects?api_key={os.getenv("LIBRARIES_API_KEY")}'
 
     async def f():
-        api.sync()
+        last_release = pytz.utc.localize(datetime.now()) - timedelta(days=10000)
 
-        project = None
-        if project_name:
-            for project in api.state['projects']:
-                if project['name'] == project_name:
-                    break
+        r = requests.get(url)
+        r.raise_for_status()
+        projects = r.json()
 
-        if project_name and project:
-            return len(list(
-                i for i in api.state["items"]
-                if i["project_id"] == project["id"]
-                and (not priority or i["priority"] == priority)
-                and (not title or i["content"] == title)
-                and (checked or due(i["due"]))
-                and i["checked"] == checked
-            ))
-        elif project_name:
-            return 0
-        else:
-            return len(list(
-                i for i in api.state["items"]
-                if not priority or i["priority"] == priority
-                and (not title or i["content"] == title)
-                and (checked or due(i["due"]))
-                and i["checked"] == checked
-            ))
+        for project in projects:
+            published = datetime.strptime(project['latest_release_published_at'], "%Y-%m-%dT%H:%M:%S.%f%z")
+            last_release = max(last_release, published)
+
+        return (pytz.utc.localize(datetime.now()) - last_release).days
+
+    return Metric(f)
+
+
+def sourcerank(user_id):
+    url = f'https://libraries.io/api/github/{user_id}/projects?api_key={os.getenv("LIBRARIES_API_KEY")}'
+
+    async def f():
+        last_release = pytz.utc.localize(datetime.now()) - timedelta(days=10000)
+
+        r = requests.get(url)
+        r.raise_for_status()
+        projects = r.json()
+
+        for project in projects:
+            published = datetime.strptime(project['latest_release_published_at'], "%Y-%m-%dT%H:%M:%S.%f%z")
+            last_release = max(last_release, published)
+
+        ranks = [project['rank'] for project in projects]
+        return round(sum(ranks) / len(ranks), 2)
 
     return Metric(f)
 
@@ -175,7 +173,7 @@ def notmuch():
     return Metric(f)
 
 
-def sheet_value(spreadsheetId, range):
+def sheet_value(sheet_id, range):
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
     creds = None
     # The file token.pickle stores the user's access and refresh tokens, and is
@@ -199,14 +197,14 @@ def sheet_value(spreadsheetId, range):
     async def f():
         service = build('sheets', 'v4', credentials=creds)
         sheet = service.spreadsheets()
-        result = sheet.values().get(spreadsheetId=spreadsheetId, range=range).execute()
+        result = sheet.values().get(spreadsheetId=sheet_id, range=range).execute()
         values = result.get('values', [])
-        return float(values[0][0].lstrip('£'))
+        return float(values[0][0].replace('£', ''))
 
     return Metric(f)
 
 
-def sheet_tracker(spreadsheetId, habit="Exercise"):
+def sheet_tracker(sheet_id, habit="Exercise"):
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
     creds = None
     # The file token.pickle stores the user's access and refresh tokens, and is
@@ -227,15 +225,19 @@ def sheet_tracker(spreadsheetId, habit="Exercise"):
         with open('token-sheets.pickle', 'wb') as token:
             pickle.dump(creds, token)
 
-    async def f():
+    @cachetools.cached(CACHE)
+    def sheet_data():
         service = build('sheets', 'v4', credentials=creds)
         sheet = service.spreadsheets()
-        result = sheet.values().get(spreadsheetId=spreadsheetId, range='A1:AH110').execute()
+        result = sheet.values().get(spreadsheetId=sheet_id, range='A1:AH110').execute()
         values = result.get('values', [])
+        return values
 
+    async def f():
+        values = sheet_data()
         habit_counts = defaultdict(int)
 
-        for thedate in (date.today() - timedelta(n) for n in range(5)):
+        for thedate in (date.today() - timedelta(n) for n in range(7)):
             month_row = thedate.month * 9 - 9
             day_col = thedate.day
 
