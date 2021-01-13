@@ -53,8 +53,8 @@ def failures():
         for repo in named_user.get_repos():
             trunk = repo.get_branch(repo.default_branch)
             for run in trunk.commit.get_check_runs():
-                print(repo.name, run.name, run.conclusion)
                 if run.conclusion != 'success':
+                    print(repo.name, run.name, run.conclusion)
                     failures += 1
                     break
 

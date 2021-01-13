@@ -78,6 +78,13 @@ class Metric(object):
 
         return f
 
+    def __add__(self, other):
+        async def f():
+            v1 = await self()
+            v2 = await other()
+            return v1 + v2
+        return Metric(f)
+
 
 async def _fetch(session: aiohttp.ClientSession, url: Text) -> Text:
     async with session.get(url) as response:
@@ -169,6 +176,15 @@ def notmuch():
 
     async def f():
         return int(notmuch(['count', 'tag:inbox']).strip())
+
+    return Metric(f)
+
+
+def git_summary():
+    from sh import git_summary
+
+    async def f():
+        return len(git_summary(['-q', '-n']))
 
     return Metric(f)
 
