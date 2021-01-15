@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 
 import os
-import sys
 
-from setuptools import setup, Command
-from setuptools.command.test import test as TestCommand
-import pkg_resources
+from setuptools import setup
 
 
 def read(readme_file):
@@ -13,15 +10,26 @@ def read(readme_file):
 
 
 setup(
-    name='pokr',
-    version='0.0.0',
-    author='Ross Fenning',
-    author_email='pypi@rossfenning.co.uk',
-    packages=['pokr'],
-    description='Framework for building product and personal 2scorecards.',
-    url='https://github.com/avengerpenguin/pokr',
+    name="pokr",
+    version="0.0.0",
+    author="Ross Fenning",
+    author_email="pypi@rossfenning.co.uk",
+    packages=["pokr"],
+    description="Framework for building product and personal    scorecards.",
+    url="https://github.com/avengerpenguin/pokr",
     install_requires=[
-        'quart', 'invoke', 'beautifulsoup4', 'PyGithub', 'todoist-python', 'sh', 'cachetools', 'livereload',
-        'google-api-python-client', 'google-auth-httplib2', 'google-auth-oauthlib', 'feedparser', 'pybraries',
+        "quart",
+        "invoke",
+        "beautifulsoup4",
+        "PyGithub",
+        "todoist-python",
+        "sh",
+        "cachetools",
+        "livereload",
+        "google-api-python-client",
+        "google-auth-httplib2",
+        "google-auth-oauthlib",
+        "feedparser",
+        "pybraries",
     ],
 )
