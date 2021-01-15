@@ -1,15 +1,13 @@
 import asyncio
 import os
-from typing import Text, Dict, Union, Callable, Coroutine
+from typing import Callable, Coroutine, Dict, Text
 
-from invoke import task, Collection, Task
+from invoke import Collection, Task, task
 from quart import Quart, render_template
 
 from . import metrics
 
 __all__ = ["app", "invoke", "metrics"]
-
-from .metrics import Metric
 
 
 async def task_tuple(name: Text, coro: Callable[[], Coroutine]):
@@ -18,11 +16,11 @@ async def task_tuple(name: Text, coro: Callable[[], Coroutine]):
 
 def app(
     name: Text,
-    metric_functions: Dict[Text, Dict[Text, Callable[[], Coroutine]]] = None
+    metric_functions: Dict[Text, Dict[Text, Callable[[], Coroutine]]] = None,
 ) -> Quart:
     template_dir = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)),
-        'templates')
+        os.path.abspath(os.path.dirname(__file__)), "templates"
+    )
     quart_app = Quart(name, template_folder=template_dir)
     quart_app.config.from_mapping(debug=True)
 
@@ -49,7 +47,8 @@ def app(
 
 def add_task(collection: Collection, t: Task, **project_args) -> None:
     @task(
-        name=t.name, optional=t.optional,
+        name=t.name,
+        optional=t.optional,
     )
     def wrapped_task(c, **task_args):
         return t(c, **project_args, **task_args)
@@ -60,6 +59,7 @@ def add_task(collection: Collection, t: Task, **project_args) -> None:
 
 def invoke() -> Collection:
     from . import tasks as t
+
     collection = Collection("tasks")
     add_task(collection, t.livereload)
     return collection
