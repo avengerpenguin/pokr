@@ -2,7 +2,7 @@
 
 import os
 
-from setuptools import setup
+from setuptools import find_packages, setup
 
 
 def read(readme_file):
@@ -14,10 +14,11 @@ setup(
     version="0.0.0",
     author="Ross Fenning",
     author_email="pypi@rossfenning.co.uk",
-    packages=["pokr"],
-    description="Framework for building product and personal    scorecards.",
+    packages=find_packages(),
+    description="Framework for building product and personal scorecards.",
     url="https://github.com/avengerpenguin/pokr",
     install_requires=[
+        "aiohttp",
         "quart",
         "invoke",
         "beautifulsoup4",

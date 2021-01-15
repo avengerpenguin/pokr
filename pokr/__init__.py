@@ -5,9 +5,7 @@ from typing import Callable, Coroutine, Dict, Text
 from invoke import Collection, Task, task
 from quart import Quart, render_template
 
-from . import metrics
-
-__all__ = ["app", "invoke", "metrics"]
+__all__ = ["app", "invoke"]
 
 
 async def task_tuple(name: Text, coro: Callable[[], Coroutine]):
