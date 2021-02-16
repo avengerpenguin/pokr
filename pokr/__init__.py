@@ -1,6 +1,6 @@
 import asyncio
 import os
-from typing import Callable, Coroutine, Dict, Text
+from typing import Callable, Coroutine, Dict
 
 from invoke import Collection, Task, task
 from quart import Quart, render_template
