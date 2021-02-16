@@ -8,13 +8,13 @@ from quart import Quart, render_template
 __all__ = ["app", "invoke"]
 
 
-async def task_tuple(name: Text, coro: Callable[[], Coroutine]):
+async def task_tuple(name: str, coro: Callable[[], Coroutine]):
     return name, await coro()
 
 
 def app(
-    name: Text,
-    metric_functions: Dict[Text, Dict[Text, Callable[[], Coroutine]]] = None,
+    name: str,
+    metric_functions: Dict[str, Dict[str, Callable[[], Coroutine]]] = None,
 ) -> Quart:
     template_dir = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), "templates"

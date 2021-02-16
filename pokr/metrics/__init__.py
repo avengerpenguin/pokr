@@ -20,7 +20,7 @@ from googleapiclient.discovery import build
 CACHE = cachetools.TTLCache(maxsize=256, ttl=900)
 
 
-class Metric(object):
+class Metric:
     def __init__(self, v: Callable[[], Awaitable[Union[int, float]]]):
         self.v = v
 
@@ -90,12 +90,12 @@ class Metric(object):
         return Metric(f)
 
 
-async def _fetch(session: aiohttp.ClientSession, url: Text) -> Text:
+async def _fetch(session: aiohttp.ClientSession, url: str) -> str:
     async with session.get(url) as response:
         return await response.text()
 
 
-def fetch(url: Text, parser: Callable) -> Metric:
+def fetch(url: str, parser: Callable) -> Metric:
     async def f():
         async with aiohttp.ClientSession() as session:
             text = await _fetch(session, url)
@@ -105,7 +105,7 @@ def fetch(url: Text, parser: Callable) -> Metric:
     return Metric(f)
 
 
-def goodreads(user: Text):
+def goodreads(user: str):
     url = f"https://www.goodreads.com/review/list/{user}?shelf=read"
     return fetch(
         url,
