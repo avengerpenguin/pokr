@@ -5,7 +5,7 @@ import os.path
 import pickle
 from collections import defaultdict
 from datetime import date, datetime, timedelta
-from typing import Awaitable, Callable, Dict, Text, Tuple, Union
+from typing import Awaitable, Callable, Dict, Tuple, Union
 
 import aiohttp
 import cachetools
