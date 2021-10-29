@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="1200">
     <title>Scorecard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/marx/3.0.5/marx.min.css">
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -75,7 +76,7 @@
                         {% endif %}
                         <small>({{kpi.amber}}, {{kpi.green}})</small>
                     </td>
-                    <td class="status-{{ kpi.status }}">
+                    <td class="statussss-{{ kpi.status }}" style="background-color: hsla({{ kpi.hue }}, 90%, 62%, 1)">
                         {{ kpi.value }}
                     </td>
                 </tr>

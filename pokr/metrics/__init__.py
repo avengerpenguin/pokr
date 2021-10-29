@@ -1,4 +1,3 @@
-import asyncio
 import math
 import os
 import os.path
@@ -20,12 +19,28 @@ from googleapiclient.discovery import build
 CACHE = cachetools.TTLCache(maxsize=256, ttl=900)
 
 
-class Metric:
-    def __init__(self, v: Callable[[], Awaitable[Union[int, float]]]):
-        self.v = v
+def scale_colour(base: str, target: str, proportion: float):
+    return "".join(
+        "%0.2X"
+        % int(
+            (
+                proportion
+                * (int(target[i : i + 2], 16) - int(base[i : i + 2], 16))
+            )
+            + int(base[i : i + 2], 16)
+        )
+        for i in (0, 2, 4)
+    )
+
+
+class Metric(object):
+    def __init__(
+        self, metric_function: Callable[[], Awaitable[Union[int, float]]]
+    ):
+        self.metric_function = metric_function
 
     def __call__(self) -> Awaitable[Union[int, float]]:
-        return self.v()
+        return self.metric_function()
 
     def __ge__(
         self, thresholds: Tuple[Union[int, float], Union[int, float]]
@@ -33,23 +48,36 @@ class Metric:
         amber, green = thresholds
 
         async def f() -> Dict:
-            if asyncio.iscoroutinefunction(self.v):
-                v = await self.v()
-            else:
-                v = self.v()
+            v = await self()
+
+            mid = (amber + green) / 2
 
             if v >= green:
                 status = "green"
+                colour = "2ECC40"
+                hue = 120
             elif v >= amber:
                 status = "amber"
+                hue = int(120 * ((v - amber) / (green - amber)))
+                if v >= mid:
+                    colour = scale_colour(
+                        "FF4136", "2ECC40", (v - mid) / (green - mid)
+                    )
+                else:
+                    colour = scale_colour(
+                        "FF4136", "FFBF00", (v - amber) / (mid - amber)
+                    )
             else:
                 status = "red"
-
+                colour = "FF4136"
+                hue = 0
             return {
                 "status": status,
                 "value": v,
                 "green": green,
                 "amber": amber,
+                "colour": colour,
+                "hue": hue,
             }
 
         return f
@@ -60,23 +88,24 @@ class Metric:
         green, amber = thresholds
 
         async def f() -> Dict:
-            if asyncio.iscoroutinefunction(self.v):
-                v = await self.v()
-            else:
-                v = self.v()
+            v = await self()
 
             if v <= green:
                 status = "green"
+                hue = 120
             elif v <= amber:
                 status = "amber"
+                hue = int(120 * ((amber - v) / (amber - green)))
             else:
                 status = "red"
+                hue = 0
 
             return {
                 "status": status,
                 "value": v,
                 "green": green,
                 "amber": amber,
+                "hue": hue,
             }
 
         return f
@@ -117,7 +146,7 @@ def goodreads(user: str):
     )
 
 
-def notes(repo_name):
+def notes(repo_name, extension=".md"):
     github = Github(os.getenv("GITHUB_TOKEN"))
     repo = github.get_repo(repo_name)
 
@@ -130,7 +159,7 @@ def notes(repo_name):
             file_content = contents.pop(0)
             if file_content.type == "dir":
                 contents.extend(repo.get_contents(file_content.path))
-            elif file_content.name.endswith(".md"):
+            elif file_content.name.endswith(extension):
                 word_count += len(
                     file_content.decoded_content.decode("utf8")
                     .replace("#", "")
@@ -307,7 +336,7 @@ def baseline(metric, base):
 
 
 def scaled(thresholds, start, deadline):
-    now = date.today()
-    elapsed = (now - start) / (deadline - start)
+    end_of_day = date.today() + timedelta(days=1)
+    elapsed = (end_of_day - start) / (deadline - start)
     t1, t2 = thresholds
     return math.floor(t1 * elapsed), math.ceil(t2 * elapsed)
