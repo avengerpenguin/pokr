@@ -2,10 +2,11 @@ import os
 from datetime import date, datetime
 
 import cachetools
+from cachetools import TTLCache
 
 from . import Metric
 
-CACHE = cachetools.TTLCache(maxsize=1024, ttl=900)
+CACHE: TTLCache = cachetools.TTLCache(maxsize=1024, ttl=900)
 
 
 @cachetools.cached(CACHE)

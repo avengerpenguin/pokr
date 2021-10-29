@@ -1,6 +1,6 @@
 import asyncio
 import os
-from typing import Callable, Coroutine, Dict
+from typing import Any, Callable, Coroutine, Dict, List
 
 from invoke import Collection, Task, task
 from quart import Quart, render_template
@@ -14,7 +14,7 @@ async def task_tuple(name: str, coro: Callable[[], Coroutine]):
 
 def app(
     name: str,
-    metric_functions: Dict[str, Dict[str, Callable[[], Coroutine]]] = None,
+    metric_functions: Dict[str, Dict[str, Callable[[], Coroutine]]],
 ) -> Quart:
     template_dir = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), "templates"
@@ -24,8 +24,9 @@ def app(
 
     @quart_app.route("/")
     async def index() -> str:
-        scorecard = {}
+        scorecard: Dict[str, List[Any]] = {}
 
+        kpis: Dict[str, Callable[[], Coroutine]]
         for heading, kpis in metric_functions.items():
             scorecard[heading] = []
 

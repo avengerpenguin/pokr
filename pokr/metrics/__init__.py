@@ -11,12 +11,13 @@ import cachetools
 import pytz
 import requests
 from bs4 import BeautifulSoup
+from cachetools import TTLCache
 from github import Github
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-CACHE = cachetools.TTLCache(maxsize=256, ttl=900)
+CACHE: TTLCache = cachetools.TTLCache(maxsize=256, ttl=900)
 
 
 def scale_colour(base: str, target: str, proportion: float):
@@ -33,7 +34,7 @@ def scale_colour(base: str, target: str, proportion: float):
     )
 
 
-class Metric(object):
+class Metric:
     def __init__(
         self, metric_function: Callable[[], Awaitable[Union[int, float]]]
     ):
