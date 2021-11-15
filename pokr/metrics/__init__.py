@@ -33,7 +33,7 @@ def scale_colour(base: str, target: str, proportion: float):
     )
 
 
-class Metric(object):
+class Metric:
     def __init__(
         self, metric_function: Callable[[], Awaitable[Union[int, float]]]
     ):
