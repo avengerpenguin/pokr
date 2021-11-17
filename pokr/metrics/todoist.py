@@ -45,13 +45,13 @@ def items(
 
     async def f():
         items, projects = _get_items_projects()
-        project = None
-        if project_name:
-            for project in projects:
-                if project["name"] == project_name:
-                    break
 
-        if project_name and project:
+        if project_name:
+            project = [
+                project
+                for project in projects
+                if project["name"] == project_name
+            ][0]
             return len(
                 list(
                     i
@@ -64,8 +64,6 @@ def items(
                     and i["checked"] == checked
                 )
             )
-        elif project_name:
-            return 0
         else:
             return len(
                 list(
