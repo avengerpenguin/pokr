@@ -13,9 +13,14 @@ import requests
 from bs4 import BeautifulSoup
 from cachetools import TTLCache
 from github import Github
+from google.analytics.data_v1beta import BetaAnalyticsDataClient
+from google.analytics.data_v1beta.types import DateRange
+from google.analytics.data_v1beta.types import Metric as GAMetric
+from google.analytics.data_v1beta.types import RunReportRequest
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+from sh import mu
 
 CACHE: TTLCache = cachetools.TTLCache(maxsize=256, ttl=900)
 
@@ -120,6 +125,13 @@ class Metric:
         return Metric(f)
 
 
+async def zero():
+    return 0
+
+
+ZERO = Metric(zero)
+
+
 async def _fetch(session: aiohttp.ClientSession, url: str) -> str:
     async with session.get(url) as response:
         return await response.text()
@@ -131,6 +143,22 @@ def fetch(url: str, parser: Callable) -> Metric:
             text = await _fetch(session, url)
             soup = BeautifulSoup(text, "html.parser")
             return parser(soup)
+
+    return Metric(f)
+
+
+def google_analytics(property_id):
+    async def f():
+        client = BetaAnalyticsDataClient()
+
+        request = RunReportRequest(
+            property=f"properties/{property_id}",
+            metrics=[GAMetric(name="activeUsers")],
+            date_ranges=[DateRange(start_date="28daysAgo", end_date="today")],
+        )
+        response = client.run_report(request)
+
+        return sum(int(row.metric_values[0].value) for row in response.rows)
 
     return Metric(f)
 
@@ -324,6 +352,25 @@ def sheet_tracker(sheet_id, habit="Exercise"):
                     habit_counts[habit_name] += 1
 
         return habit_counts[habit]
+
+    return Metric(f)
+
+
+def mu_score(maildir):
+    async def f():
+        return sum(
+            (
+                datetime.now()
+                - datetime.strptime(d.strip(), "%a %d %b %H:%M:%S %Y")
+            ).days
+            + 1
+            for d in mu(
+                "find",
+                f"maildir:{maildir}",
+                "--fields",
+                "d",
+            )
+        )
 
     return Metric(f)
 

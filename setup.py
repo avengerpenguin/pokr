@@ -33,5 +33,6 @@ setup(
         "google-auth-oauthlib",
         "feedparser",
         "pybraries",
+        "google-analytics-data",
     ],
 )

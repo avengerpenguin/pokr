@@ -61,3 +61,10 @@ def failures():
         return failures
 
     return Metric(f)
+
+
+def pulls():
+    async def f():
+        github.get_user(get_user_login())
+
+    return Metric(f)
