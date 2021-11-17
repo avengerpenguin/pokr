@@ -2,12 +2,13 @@ import os
 from datetime import datetime, timedelta
 
 import cachetools
+from cachetools import TTLCache
 from github import Github
 
 from . import Metric
 
 github = Github(os.getenv("GITHUB_TOKEN"))
-CACHE = cachetools.TTLCache(maxsize=256, ttl=900)
+CACHE: TTLCache = cachetools.TTLCache(maxsize=256, ttl=900)
 
 
 @cachetools.cached(CACHE)
@@ -58,5 +59,12 @@ def failures():
                     break
 
         return failures
+
+    return Metric(f)
+
+
+def pulls():
+    async def f():
+        github.get_user(get_user_login())
 
     return Metric(f)

@@ -1,30 +1,31 @@
 #!/usr/bin/env python
+from setuptools import setup
 
-import os
-
-from setuptools import find_packages, setup
-
-
-def read(readme_file):
-    return open(os.path.join(os.path.dirname(__file__), readme_file)).read()
-
-
+NAME = "pokr"
 setup(
-    name="pokr",
-    version="0.0.0",
+    name=NAME,
+    use_scm_version={
+        "local_scheme": "dirty-tag",
+        "write_to": f"{NAME}/_version.py",
+        "fallback_version": "0.0.0",
+    },
     author="Ross Fenning",
-    author_email="pypi@rossfenning.co.uk",
-    packages=find_packages(),
+    author_email="github@rossfenning.co.uk",
+    packages=[NAME, "pokr.metrics"],
+    package_data={NAME: ["py.typed"]},
     description="Framework for building product and personal scorecards.",
-    url="https://github.com/avengerpenguin/pokr",
+    setup_requires=[
+        "setuptools_scm>=3.3.1",
+        "pre-commit",
+    ],
     install_requires=[
         "aiohttp",
         "quart",
         "invoke",
+        "doctrine",
         "beautifulsoup4",
         "PyGithub",
         "todoist-python",
-        "sh",
         "cachetools",
         "livereload",
         "google-api-python-client",
@@ -32,5 +33,19 @@ setup(
         "google-auth-oauthlib",
         "feedparser",
         "pybraries",
+        "pytz",
+        "google-analytics-data",
     ],
+    extras_require={
+        "test": [
+            "pytest",
+            "pytest-pikachu",
+            "pytest-mypy",
+            "pytest-asyncio",
+            "types-cachetools",
+            "types-requests",
+            "types-pytz",
+            "types-beautifulsoup4",
+        ],
+    },
 )

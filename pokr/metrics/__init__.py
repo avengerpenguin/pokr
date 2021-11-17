@@ -2,6 +2,7 @@ import math
 import os
 import os.path
 import pickle
+import subprocess
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from typing import Awaitable, Callable, Dict, Tuple, Union
@@ -11,12 +12,17 @@ import cachetools
 import pytz
 import requests
 from bs4 import BeautifulSoup
+from cachetools import TTLCache
 from github import Github
+from google.analytics.data_v1beta import BetaAnalyticsDataClient
+from google.analytics.data_v1beta.types import DateRange
+from google.analytics.data_v1beta.types import Metric as GAMetric
+from google.analytics.data_v1beta.types import RunReportRequest
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-CACHE = cachetools.TTLCache(maxsize=256, ttl=900)
+CACHE: TTLCache = cachetools.TTLCache(maxsize=256, ttl=900)
 
 
 def scale_colour(base: str, target: str, proportion: float):
@@ -33,7 +39,7 @@ def scale_colour(base: str, target: str, proportion: float):
     )
 
 
-class Metric(object):
+class Metric:
     def __init__(
         self, metric_function: Callable[[], Awaitable[Union[int, float]]]
     ):
@@ -119,6 +125,13 @@ class Metric(object):
         return Metric(f)
 
 
+async def zero():
+    return 0
+
+
+ZERO = Metric(zero)
+
+
 async def _fetch(session: aiohttp.ClientSession, url: str) -> str:
     async with session.get(url) as response:
         return await response.text()
@@ -130,6 +143,22 @@ def fetch(url: str, parser: Callable) -> Metric:
             text = await _fetch(session, url)
             soup = BeautifulSoup(text, "html.parser")
             return parser(soup)
+
+    return Metric(f)
+
+
+def google_analytics(property_id):
+    async def f():
+        client = BetaAnalyticsDataClient()
+
+        request = RunReportRequest(
+            property=f"properties/{property_id}",
+            metrics=[GAMetric(name="activeUsers")],
+            date_ranges=[DateRange(start_date="28daysAgo", end_date="today")],
+        )
+        response = client.run_report(request)
+
+        return sum(int(row.metric_values[0].value) for row in response.rows)
 
     return Metric(f)
 
@@ -221,24 +250,6 @@ def sourcerank(user_id):
     return Metric(f)
 
 
-def notmuch():
-    from sh import notmuch
-
-    async def f():
-        return int(notmuch(["count", "tag:inbox"]).strip())
-
-    return Metric(f)
-
-
-def git_summary():
-    from sh import git_summary
-
-    async def f():
-        return len(git_summary(["-q", "-n"]))
-
-    return Metric(f)
-
-
 def sheet_value(sheet_id, range):
     SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
     creds = None
@@ -323,6 +334,30 @@ def sheet_tracker(sheet_id, habit="Exercise"):
                     habit_counts[habit_name] += 1
 
         return habit_counts[habit]
+
+    return Metric(f)
+
+
+def mu_score(maildir):
+    async def f():
+        return sum(
+            (
+                datetime.now()
+                - datetime.strptime(d.strip(), "%a %d %b %H:%M:%S %Y")
+            ).days
+            + 1
+            for d in subprocess.run(
+                [
+                    "find",
+                    f"maildir:{maildir}",
+                    "--fields",
+                    "d",
+                ],
+                stdout=subprocess.PIPE,
+            )
+            .stdout.decode("utf-8")
+            .splitlines()
+        )
 
     return Metric(f)
 

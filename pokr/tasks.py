@@ -1,6 +1,6 @@
-import invoke
+from invoke import task
 
 
-@invoke.task
+@task
 def livereload(c):
     c.run("QUART_APP=scorecard:app quart run")

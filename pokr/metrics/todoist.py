@@ -2,10 +2,11 @@ import os
 from datetime import date, datetime
 
 import cachetools
+from cachetools import TTLCache
 
 from . import Metric
 
-CACHE = cachetools.TTLCache(maxsize=1024, ttl=900)
+CACHE: TTLCache = cachetools.TTLCache(maxsize=1024, ttl=900)
 
 
 @cachetools.cached(CACHE)
@@ -44,13 +45,13 @@ def items(
 
     async def f():
         items, projects = _get_items_projects()
-        project = None
-        if project_name:
-            for project in projects:
-                if project["name"] == project_name:
-                    break
 
-        if project_name and project:
+        if project_name:
+            project = [
+                project
+                for project in projects
+                if project["name"] == project_name
+            ][0]
             return len(
                 list(
                     i
@@ -63,8 +64,6 @@ def items(
                     and i["checked"] == checked
                 )
             )
-        elif project_name:
-            return 0
         else:
             return len(
                 list(
