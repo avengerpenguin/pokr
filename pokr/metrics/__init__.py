@@ -20,7 +20,6 @@ from google.analytics.data_v1beta.types import RunReportRequest
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from sh import mu
 
 CACHE: TTLCache = cachetools.TTLCache(maxsize=256, ttl=900)
 
@@ -357,6 +356,8 @@ def sheet_tracker(sheet_id, habit="Exercise"):
 
 
 def mu_score(maildir):
+    from sh import mu
+
     async def f():
         return sum(
             (

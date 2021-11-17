@@ -33,9 +33,10 @@ setup(
         "google-auth-oauthlib",
         "feedparser",
         "pybraries",
+        "pytz",
         "google-analytics-data",
     ],
     extras_require={
-        "test": ["pytest", "pytest-pikachu", "pytest-mypy"],
+        "test": ["pytest", "pytest-pikachu", "pytest-mypy", "pytest-asyncio"],
     },
 )
