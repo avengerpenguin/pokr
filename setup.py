@@ -35,4 +35,7 @@ setup(
         "pybraries",
         "google-analytics-data",
     ],
+    extras_require={
+        "test": ["pytest", "pytest-pikachu", "pytest-mypy"],
+    },
 )
