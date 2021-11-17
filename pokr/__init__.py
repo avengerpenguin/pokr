@@ -2,7 +2,8 @@ import asyncio
 import os
 from typing import Any, Callable, Coroutine, Dict, List
 
-from invoke import Collection, Task, task
+from doctrine import add_task
+from invoke import Collection
 from quart import Quart, render_template
 
 __all__ = ["app", "invoke", "metrics"]
@@ -42,18 +43,6 @@ def app(
         return await render_template("scorecard.html", scorecard=scorecard)
 
     return quart_app
-
-
-def add_task(collection: Collection, t: Task, **project_args) -> None:
-    @task(
-        name=t.name,
-        optional=t.optional,
-    )
-    def wrapped_task(c, **task_args):
-        return t(c, **project_args, **task_args)
-
-    wrapped_task.__doc__ = t.__doc__
-    collection.add_task(wrapped_task, name=t.__name__)
 
 
 def invoke() -> Collection:

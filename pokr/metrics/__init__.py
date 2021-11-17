@@ -2,6 +2,7 @@ import math
 import os
 import os.path
 import pickle
+import subprocess
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from typing import Awaitable, Callable, Dict, Tuple, Union
@@ -249,24 +250,6 @@ def sourcerank(user_id):
     return Metric(f)
 
 
-def notmuch():
-    from sh import notmuch
-
-    async def f():
-        return int(notmuch(["count", "tag:inbox"]).strip())
-
-    return Metric(f)
-
-
-def git_summary():
-    from sh import git_summary
-
-    async def f():
-        return len(git_summary(["-q", "-n"]))
-
-    return Metric(f)
-
-
 def sheet_value(sheet_id, range):
     SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
     creds = None
@@ -356,8 +339,6 @@ def sheet_tracker(sheet_id, habit="Exercise"):
 
 
 def mu_score(maildir):
-    from sh import mu
-
     async def f():
         return sum(
             (
@@ -365,12 +346,17 @@ def mu_score(maildir):
                 - datetime.strptime(d.strip(), "%a %d %b %H:%M:%S %Y")
             ).days
             + 1
-            for d in mu(
-                "find",
-                f"maildir:{maildir}",
-                "--fields",
-                "d",
+            for d in subprocess.run(
+                [
+                    "find",
+                    f"maildir:{maildir}",
+                    "--fields",
+                    "d",
+                ],
+                stdout=subprocess.PIPE,
             )
+            .stdout.decode("utf-8")
+            .splitlines()
         )
 
     return Metric(f)
