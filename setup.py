@@ -11,7 +11,7 @@ setup(
     },
     author="Ross Fenning",
     author_email="github@rossfenning.co.uk",
-    packages=[NAME],
+    packages=[NAME, "pokr.metrics"],
     package_data={NAME: ["py.typed"]},
     description="Framework for building product and personal scorecards.",
     setup_requires=[
