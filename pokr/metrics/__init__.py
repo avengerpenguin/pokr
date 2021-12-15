@@ -148,7 +148,8 @@ def fetch(url: str, parser: Callable) -> Metric:
 
 
 def google_analytics(property_id):
-    async def f():
+    @cachetools.cached(CACHE)
+    def get_values():
         client = BetaAnalyticsDataClient()
 
         request = RunReportRequest(
@@ -158,7 +159,11 @@ def google_analytics(property_id):
         )
         response = client.run_report(request)
 
-        return sum(int(row.metric_values[0].value) for row in response.rows)
+        return response.rows
+
+    async def f():
+        rows = get_values()
+        return sum(int(row.metric_values[0].value) for row in rows)
 
     return Metric(f)
 
@@ -340,6 +345,27 @@ def sheet_tracker(sheet_id, habit="Exercise"):
 
 def mu_score(maildir):
     async def f():
+        print(
+            sum(
+                (
+                    datetime.now()
+                    - datetime.strptime(d.strip(), "%a %d %b %H:%M:%S %Y")
+                ).days
+                + 1
+                for d in subprocess.run(
+                    [
+                        "mu",
+                        "find",
+                        f"maildir:{maildir}",
+                        "--fields",
+                        "d",
+                    ],
+                    stdout=subprocess.PIPE,
+                )
+                .stdout.decode("utf-8")
+                .splitlines()
+            )
+        )
         return sum(
             (
                 datetime.now()
@@ -348,6 +374,7 @@ def mu_score(maildir):
             + 1
             for d in subprocess.run(
                 [
+                    "mu",
                     "find",
                     f"maildir:{maildir}",
                     "--fields",
