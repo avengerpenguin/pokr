@@ -1,0 +1,11 @@
+.direnv
+venv
+target
+dist
+build
+.mypy_cache
+.idea
+.tox
+.git
+.eggs
+*.egg-info

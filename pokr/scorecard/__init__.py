@@ -6,7 +6,7 @@ from doctrine import add_task
 from invoke import Collection
 from quart import Quart, render_template
 
-__all__ = ["app", "invoke", "metrics"]
+__all__ = ["app", "invoke"]
 
 
 async def task_tuple(name: str, coro: Callable[[], Coroutine]):
@@ -18,7 +18,7 @@ def app(
     metric_functions: Dict[str, Dict[str, Callable[[], Coroutine]]],
 ) -> Quart:
     template_dir = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), "templates"
+        os.path.abspath(os.path.dirname(__file__)), "scorecard/templates"
     )
     quart_app = Quart(name, template_folder=template_dir)
     quart_app.config.from_mapping(debug=True)
