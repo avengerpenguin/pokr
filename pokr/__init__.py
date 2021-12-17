@@ -20,6 +20,7 @@ def app(
     template_dir = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), "templates"
     )
+    print(template_dir)
     quart_app = Quart(name, template_folder=template_dir)
     quart_app.config.from_mapping(debug=True)
 
