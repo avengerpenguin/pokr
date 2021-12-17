@@ -1,1 +1,13 @@
+exclude .*
+exclude *.*
+
+include setup.py
+include pyproject.toml
+
+recursive-exclude . *
+recursive-exclude .github *
+recursive-exclude pokr.egg-info *
+recursive-exclude stubs *
+
+recursive-include pokr *.py
 recursive-include pokr/templates *.html
